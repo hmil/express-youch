@@ -1,0 +1,23 @@
+{
+  "name": "express-youch",
+  "version": "0.0.0",
+  "description": "Express middleware for youch",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node test/server.ts && echo 'Test server started, open http://localhost:3000 to see it in action'"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "youch": "^2.0.8"
+  },
+  "devDependencies": {
+    "@senhung/http-exceptions": "1.1.1",
+    "@types/express": "^4.16.0",
+    "express": "^4.16.3",
+    "ts-node": "^7.0.0",
+    "typescript": "^2.9.2"
+  }
+}

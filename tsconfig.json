@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "importHelpers": false,
+        "sourceMap": true,
+        "outDir": "dist",
+        "declaration": true,
+        "target": "es6",
+        "module": "commonjs"
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
