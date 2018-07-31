@@ -1,5 +1,7 @@
 # Beautiful error reporting for express
 
+[![Build Status](https://travis-ci.org/hmil/express-youch.svg?branch=master)](https://travis-ci.org/hmil/express-youch)
+
 Beautiful, spec-compliant error reporting for express.
 
 ## What does this do?
