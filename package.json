@@ -15,8 +15,16 @@
     "lint": "tslint -p .",
     "demo": "ts-node test/manual-test.ts"
   },
-  "author": "",
+  "author": "Hadrien Milano <https://hmil.fr>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hmil/express-youch.git"
+  },
+  "homepage": "https://github.com/hmil/express-youch#readme",
+  "bugs": {
+    "url": "https://github.com/hmil/express-youch/issues"
+  },
   "dependencies": {
     "youch": "^2.0.8"
   },
