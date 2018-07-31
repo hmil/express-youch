@@ -18,8 +18,8 @@ const prompt = inquirer.createPromptModule();
         type: 'input',
         name: 'version',
         message: 'Version?',
-        filter: (val) => {
-        return val.toLowerCase();
+        filter: (val: string) => {
+            return val.toLowerCase();
         }
     }, {
         type: 'input',
