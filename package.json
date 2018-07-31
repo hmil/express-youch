@@ -1,53 +1,53 @@
 {
-  "name": "express-youch",
-  "version": "0.0.0",
-  "description": "Express middleware for youch",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "test": "npm run lint && npm run test:dev && npm run test:prod",
-    "test:dev": "mocha --require ts-node/register test/automated-test.ts",
-    "test:prod": "cross-env NODE_ENV=production mocha --require ts-node/register test/automated-test-prod.ts",
-    "lint": "tslint -p .",
-    "demo": "ts-node test/manual-test.ts",
-    "release": "ts-node resources/release.sh.ts"
-  },
-  "author": "Hadrien Milano <https://hmil.fr>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/hmil/express-youch.git"
-  },
-  "homepage": "https://github.com/hmil/express-youch#readme",
-  "bugs": {
-    "url": "https://github.com/hmil/express-youch/issues"
-  },
-  "dependencies": {
-    "youch": "^2.0.8"
-  },
-  "devDependencies": {
-    "@senhung/http-exceptions": "1.1.1",
-    "@types/chai": "^4.1.4",
-    "@types/express": "^4.16.0",
-    "@types/inquirer": "0.0.42",
-    "@types/mocha": "^5.2.5",
-    "@types/shelljs": "^0.8.0",
-    "@types/supertest": "^2.0.5",
-    "chai": "^4.1.2",
-    "cross-env": "^5.2.0",
-    "ejs": "^2.6.1",
-    "express": "^4.16.3",
-    "inquirer": "^6.0.0",
-    "mocha": "^5.2.0",
-    "shelljs": "^0.8.2",
-    "supertest": "^3.1.0",
-    "ts-node": "^7.0.0",
-    "tslint": "^5.11.0",
-    "tslint-language-service": "^0.9.9",
-    "typescript": "^2.9.2"
-  }
+    "name": "express-youch",
+    "version": "0.0.1",
+    "description": "Express middleware for youch",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "test": "npm run lint && npm run test:dev && npm run test:prod",
+        "test:dev": "mocha --require ts-node/register test/automated-test.ts",
+        "test:prod": "cross-env NODE_ENV=production mocha --require ts-node/register test/automated-test-prod.ts",
+        "lint": "tslint -p .",
+        "demo": "ts-node test/manual-test.ts",
+        "release": "ts-node resources/release.sh.ts"
+    },
+    "author": "Hadrien Milano <https://hmil.fr>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/hmil/express-youch.git"
+    },
+    "homepage": "https://github.com/hmil/express-youch#readme",
+    "bugs": {
+        "url": "https://github.com/hmil/express-youch/issues"
+    },
+    "dependencies": {
+        "youch": "^2.0.8"
+    },
+    "devDependencies": {
+        "@senhung/http-exceptions": "1.1.1",
+        "@types/chai": "^4.1.4",
+        "@types/express": "^4.16.0",
+        "@types/inquirer": "0.0.42",
+        "@types/mocha": "^5.2.5",
+        "@types/shelljs": "^0.8.0",
+        "@types/supertest": "^2.0.5",
+        "chai": "^4.1.2",
+        "cross-env": "^5.2.0",
+        "ejs": "^2.6.1",
+        "express": "^4.16.3",
+        "inquirer": "^6.0.0",
+        "mocha": "^5.2.0",
+        "shelljs": "^0.8.2",
+        "supertest": "^3.1.0",
+        "ts-node": "^7.0.0",
+        "tslint": "^5.11.0",
+        "tslint-language-service": "^0.9.9",
+        "typescript": "^2.9.2"
+    }
 }
