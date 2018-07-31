@@ -2,11 +2,13 @@
     "compilerOptions": {
         "strict": true,
         "importHelpers": false,
-        "sourceMap": true,
         "outDir": "dist",
         "declaration": true,
         "target": "es6",
-        "module": "commonjs"
+        "module": "commonjs",
+        "plugins": [
+            { "name": "tslint-language-service" }
+        ]
     },
     "include": [
         "src/**/*.ts"

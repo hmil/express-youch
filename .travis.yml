@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+- lts/*
+- node
+script:
+- npm run build
+- npm test
+deploy:
+  provider: npm
+  email: hadrien.milano@gmail.com
+  api_key:
+    secure: sS6A6YrOuXvNXKE7wfdfvl14PlT0l55wFZbMlr6y32sxGYFbYax+TeioGHsEBzuTwgYJoLk1e2GvjVk8wovubkLYNewo7HJtdc3Ez5kPbJleL5jD3/HZvCcYT4mKMCcAwd1Gv/wQdgE8S5MDFhwgEBj37dU5onbpo3gOPr3LmtN1fitqeGvWyOVwZaGLLUN/RVlLUANrFZl8aQKRUiIUtXVc7dU0/2oWigZ4uYGbclxG34EPd/+AADhEPaucaZoiSsj60bn1G9acA27bhT7EDc2fWp/eCnxxMkm2t+bRY6t/IEalJIqtGYofZpY6CjlzdIENf6kVIqkB/UM7A9IvUI00bQciPqd5IG5Bwct2tU7f9qa0qL9+vPvjbpYDctJkR2vu4WeepdWfycF6tcpdjxt9hMU4/4gc/Hokzik0e+N25hsT4l9xYw9otdHMuHdPqOgzI5Dp9VoW/6tjFg2pPyZXakwO2OCE4Konr7+nr+rfQ34E99oTBdoAXVm9TMFxtLZ01GmKwQD/PL6OQynyW9/J5N3t/JQNHoy/T6xUCSxRtDh4VOH2Rf7cZN9CMioS+M1Zm+S9vG22zd10aInegQAX728kJ9xxhU0zU6kDg7tigweNr5QaTa1eAIfPRY1JfjilO6O3rCLlokEwljUoogqxkOeZMtqHvP9nji7aBtw=
+  on:
+    tags: true
+    repo: hmil/express-youch
+  skip_cleanup: true

@@ -2,14 +2,14 @@
 // disappears after compilation.
 import { NextFunction, Request, Response } from 'express';
 import * as Http from 'http';
-
 import * as Youch from 'youch';
 
 /**
  * WARNING: public API. If this interface changes, then it is a BREAKING change (bump module major version).
  */
-interface IExceptionDescriptor {
+export interface IExceptionDescriptor {
     statusCode: number;
+    name: string;
     message: string;
     stack?: any;
 }
@@ -21,13 +21,9 @@ type IReceivedError = Partial<Error> & string & {
     statusCode?: number | string;
     code?: number | string;
     status?: number | string;
-}
+};
 
 type ResponseFormat = 'json' | 'text' | 'html';
-
-export interface IMiddlewareConfig {
-    prod: boolean;
-}
 
 /**
  * An express-compatible middleware to catch all errors.
@@ -36,20 +32,18 @@ export interface IMiddlewareConfig {
  *
    ```ts
    import { errorReporter } from 'express-youch';
-   
-   app.use(errorReporter({
-       prod: process.env.NODE_ENV === 'production'
-   }));
+
+   app.use(errorReporter());
    ```
  */
-export function errorReporter(config: IMiddlewareConfig) {
+export function errorReporter() {
     return (err: IReceivedError, req: Request, res: Response, next: NextFunction) => {
-        if (res.headersSent || config.prod !== false) {
+        if (res.headersSent) {
             return next(err);
         }
         const descriptor = applyDefaults(createErrorDescriptor(err));
-        sendException(req, res, descriptor);
-    }
+        sendException(req, res, descriptor).then(() => next(descriptor));
+    };
 }
 
 /**
@@ -58,6 +52,7 @@ export function errorReporter(config: IMiddlewareConfig) {
  */
 function createErrorDescriptor(err: IReceivedError): Partial<IExceptionDescriptor> {
     return {
+        name: 'constructor' in err ? err.constructor.name : 'name' in err ? err.name : undefined,
         message: 'message' in err ? err.message : safeToString(err),
         stack: 'stack' in err ? err.stack : undefined,
         statusCode: extractStatusCode(err)
@@ -67,8 +62,9 @@ function createErrorDescriptor(err: IReceivedError): Partial<IExceptionDescripto
 function applyDefaults(descriptor: Partial<IExceptionDescriptor>): IExceptionDescriptor {
     const status = descriptor.statusCode || 500;
     return {
-        message: descriptor.message || Http.STATUS_CODES[status] || 'Unknown error',
-        stack: descriptor.stack || '',
+        name: descriptor.name || 'Unknown error',
+        message: descriptor.message || Http.STATUS_CODES[status] || '',
+        stack: isRunningInProd() ? '' : (descriptor.stack || ''), // Strip the stack trace in prod
         statusCode: status
     };
 }
@@ -76,14 +72,22 @@ function applyDefaults(descriptor: Partial<IExceptionDescriptor>): IExceptionDes
 /**
  * Reports the description of an error back to the user while respecting the 'Accept' header if possible.
  */
-function sendException(req: Request, res: Response, err: IExceptionDescriptor): Response {
+async function sendException(req: Request, res: Response, err: IExceptionDescriptor): Promise<void> {
     switch (getPreferredResponseFormat(req)) {
         case 'json':
-            return res.status(err.statusCode).json(err);
+            res.status(err.statusCode).json(err);
+            break;
         case 'text':
-            return res.status(err.statusCode).contentType('text/plain').send(formatTextResponse(err));
+            res.status(err.statusCode).contentType('text/plain').send(formatTextResponse(err));
+            break;
         case 'html':
-            return sendYouchError(req, res, err);
+            if (!isRunningInProd()) {
+                return sendYouchError(req, res, err);
+            }
+            // If the app is running in prod, we let the next middleware down the stack decide how
+            // to print the error.
+            // This will usually allow a user to provide their own nice customized error pages.
+            break;
     }
 }
 
@@ -102,19 +106,18 @@ function getPreferredResponseFormat(req: Request): ResponseFormat {
     return 'text';
 }
 
-function sendYouchError(req: Request, res: Response, err: IExceptionDescriptor) {
-    const youch = new Youch(err, req)
-    youch.toHTML()
+function sendYouchError(req: Request, res: Response, err: IExceptionDescriptor): Promise<void> {
+    const youch = new Youch(err, req);
+    return youch.toHTML()
         .then((html: string) => {
-            res.writeHead(err.statusCode, {'content-type': 'text/html'})
-            res.write(html)
-            res.end()
+            res.writeHead(err.statusCode, {'content-type': 'text/html'});
+            res.write(html);
+            res.end();
         });
-    return res;
 }
 
 function formatTextResponse(err: IExceptionDescriptor): string {
-    return (err.message ? err.message : 'Unknown error') + '\n' + (err.stack ? err.stack : '');
+    return err.name + ': ' + (err.message ? err.message : 'Unknown error') + '\n' + (err.stack ? err.stack : '');
 }
 
 function extractStatusCode(err: IReceivedError): number | undefined {
@@ -156,7 +159,11 @@ function safeToNumber(status: string | number): number | undefined {
 function safeToString(err: any): string | undefined {
     try {
         return err.toString();
-    } catch(e) {
+    } catch (e) {
         return undefined;
     }
+}
+
+function isRunningInProd() {
+    return process.env.NODE_ENV === 'production';
 }
