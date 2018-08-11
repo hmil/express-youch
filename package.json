@@ -1,6 +1,6 @@
 {
     "name": "express-youch",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Express middleware for youch",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
