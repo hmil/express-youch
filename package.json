@@ -27,7 +27,7 @@
         "url": "https://github.com/hmil/express-youch/issues"
     },
     "dependencies": {
-        "youch": "^2.0.8"
+        "youch": "^2.0.9"
     },
     "devDependencies": {
         "@senhung/http-exceptions": "1.1.1",
