@@ -7,11 +7,17 @@ import * as Youch from 'youch';
 /**
  * WARNING: public API. If this interface changes, then it is a BREAKING change (bump module major version).
  */
-export interface IExceptionDescriptor {
-    statusCode: number;
-    name: string;
-    message: string;
-    stack?: any;
+export class NormalizedException {
+    constructor(
+            public readonly statusCode: number,
+            public readonly name: string,
+            public readonly message: string,
+            public readonly stack?: any) {
+    }
+
+    public toString() {
+        return formatTextResponse(this);
+    }
 }
 
 /**
@@ -41,38 +47,39 @@ export function errorReporter() {
         if (res.headersSent) {
             return next(err);
         }
-        const descriptor = applyDefaults(createErrorDescriptor(err));
-        sendException(req, res, descriptor).then(() => next(descriptor));
+        const normalized = createErrorDescriptor(err);
+        sendException(req, res, stripProductionAttributes(normalized)).then(() => next(normalized));
     };
+}
+
+function stripProductionAttributes(exception: NormalizedException) {
+    return new NormalizedException(
+        exception.statusCode,
+        exception.name,
+        exception.message,
+        isRunningInProd() ? '' : exception.stack
+    );
 }
 
 /**
  * Converts an unknown error type into a precise description of the error that
  * we can easily report.
  */
-function createErrorDescriptor(err: IReceivedError): Partial<IExceptionDescriptor> {
-    return {
-        name: 'constructor' in err ? err.constructor.name : 'name' in err ? err.name : undefined,
-        message: 'message' in err ? err.message : safeToString(err),
-        stack: 'stack' in err ? err.stack : undefined,
-        statusCode: extractStatusCode(err)
-    };
-}
-
-function applyDefaults(descriptor: Partial<IExceptionDescriptor>): IExceptionDescriptor {
-    const status = descriptor.statusCode || 500;
-    return {
-        name: descriptor.name || 'Unknown error',
-        message: descriptor.message || Http.STATUS_CODES[status] || '',
-        stack: isRunningInProd() ? '' : (descriptor.stack || ''), // Strip the stack trace in prod
-        statusCode: status
-    };
+function createErrorDescriptor(err: IReceivedError): NormalizedException {
+    const maybeMessage = 'message' in err ? err.message : safeToString(err);
+    const status = extractStatusCode(err);
+    return new NormalizedException(
+        status,
+        'constructor' in err ? err.constructor.name : 'name' in err && err.name != null ? err.name : 'Unknown error',
+        maybeMessage ? maybeMessage : Http.STATUS_CODES[status] || '',
+        'stack' in err ? err.stack : undefined,
+    );
 }
 
 /**
  * Reports the description of an error back to the user while respecting the 'Accept' header if possible.
  */
-async function sendException(req: Request, res: Response, err: IExceptionDescriptor): Promise<void> {
+async function sendException(req: Request, res: Response, err: NormalizedException): Promise<void> {
     switch (getPreferredResponseFormat(req)) {
         case 'json':
             res.status(err.statusCode).json(err);
@@ -106,7 +113,7 @@ function getPreferredResponseFormat(req: Request): ResponseFormat {
     return 'text';
 }
 
-function sendYouchError(req: Request, res: Response, err: IExceptionDescriptor): Promise<void> {
+function sendYouchError(req: Request, res: Response, err: NormalizedException): Promise<void> {
     const youch = new Youch(err, req);
     return youch.toHTML()
         .then((html: string) => {
@@ -116,11 +123,11 @@ function sendYouchError(req: Request, res: Response, err: IExceptionDescriptor):
         });
 }
 
-function formatTextResponse(err: IExceptionDescriptor): string {
+function formatTextResponse(err: NormalizedException): string {
     return err.name + ': ' + (err.message ? err.message : 'Unknown error') + '\n' + (err.stack ? err.stack : '');
 }
 
-function extractStatusCode(err: IReceivedError): number | undefined {
+function extractStatusCode(err: IReceivedError): number {
     let status: number | undefined;
     if ('statusCode' in err && (status = validateStatusCode(err.statusCode))) {
         return status;
@@ -131,6 +138,7 @@ function extractStatusCode(err: IReceivedError): number | undefined {
     if ('code' in err && (status = validateStatusCode(err.code))) {
         return status;
     }
+    return 500;
 }
 
 function validateStatusCode(code: string | number | undefined): number | undefined {
@@ -156,11 +164,11 @@ function safeToNumber(status: string | number): number | undefined {
     }
 }
 
-function safeToString(err: any): string | undefined {
+function safeToString(err: any): string {
     try {
         return err.toString();
     } catch (e) {
-        return undefined;
+        return '';
     }
 }
 

@@ -2,7 +2,7 @@ import { NotFoundHttpException, NotImplementedHttpException } from '@senhung/htt
 import * as express from 'express';
 import * as path from 'path';
 
-import { errorReporter, IExceptionDescriptor } from '../';
+import { errorReporter, NormalizedException } from '../';
 
 export const app = express();
 
@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 });
 
 app.use(errorReporter());
-app.use((error: IExceptionDescriptor, req: express.Request, res: express.Response, next: any) => {
+app.use((error: NormalizedException, req: express.Request, res: express.Response, next: any) => {
     if (!res.headersSent) {
         res.status(error.statusCode).render('error-page', { error });
     } else {
