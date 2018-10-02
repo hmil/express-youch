@@ -30,9 +30,10 @@ type IReceivedError = Partial<Error> & string & {
 };
 
 type ResponseFormat = 'json' | 'text' | 'html';
-type ErrorReporterOptions = {
-  addStackOverflowLink?: boolean;
-};
+interface ErrorReporterOptions {
+    addStackOverflowLink?: boolean;
+}
+
 /**
  * An express-compatible middleware to catch all errors.
  *
@@ -50,12 +51,12 @@ export function errorReporter(options?: ErrorReporterOptions) {
             return next(err);
         }
         const normalized = createErrorDescriptor(err);
-    sendException(
-      req,
-      res,
-      stripProductionAttributes(normalized),
-      options
-    ).then(() => next(normalized));
+        sendException(
+            req,
+            res,
+            stripProductionAttributes(normalized),
+            options
+        ).then(() => next(normalized));
     };
 }
 
