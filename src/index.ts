@@ -31,8 +31,11 @@ type IReceivedError = Partial<Error> & string & {
 
 type ResponseFormat = 'json' | 'text' | 'html';
 interface ErrorReporterOptions {
-    addStackOverflowLink?: boolean;
+    links: Array<((error: {message: string}) => string)>;
 }
+const defaultErrorReporterOptions: ErrorReporterOptions = {
+    links: []
+};
 
 /**
  * An express-compatible middleware to catch all errors.
@@ -45,7 +48,11 @@ interface ErrorReporterOptions {
    app.use(errorReporter());
    ```
  */
-export function errorReporter(options?: ErrorReporterOptions) {
+export function errorReporter(options?: Partial<ErrorReporterOptions>) {
+    const realOptions: ErrorReporterOptions = {
+        ...defaultErrorReporterOptions,
+        ...options
+    };
     return (err: IReceivedError, req: Request, res: Response, next: NextFunction) => {
         if (res.headersSent) {
             return next(err);
@@ -55,7 +62,7 @@ export function errorReporter(options?: ErrorReporterOptions) {
             req,
             res,
             stripProductionAttributes(normalized),
-            options
+            realOptions
         ).then(() => next(normalized));
     };
 }
@@ -91,7 +98,7 @@ async function sendException(
   req: Request,
   res: Response,
   err: NormalizedException,
-  options?: ErrorReporterOptions
+  options: ErrorReporterOptions
 ): Promise<void> {
     switch (getPreferredResponseFormat(req)) {
         case 'json':
@@ -127,17 +134,19 @@ function getPreferredResponseFormat(req: Request): ResponseFormat {
 }
 
 function sendYouchError(
-  req: Request,
-  res: Response,
-  err: NormalizedException,
-  options?: ErrorReporterOptions
+    req: Request,
+    res: Response,
+    err: NormalizedException,
+    options: ErrorReporterOptions
 ): Promise<void> {
-    const youch = new Youch(err, req);
-    const asHtml =
-        options && options.addStackOverflowLink
-        ? youch.addLink(createStackOverflowLink).toHTML()
-        : youch.toHTML();
-    return asHtml.then((html: string) => {
+    const youch = options
+        .links
+        .reduce(
+            (youchBuilder, link) => youchBuilder.addLink(link),
+            new Youch(err, req)
+        );
+
+    return youch.toHTML().then((html: string) => {
         res.writeHead(err.statusCode, { 'content-type': 'text/html' });
         res.write(html);
         res.end();
@@ -195,11 +204,4 @@ function safeToString(err: any): string {
 
 function isRunningInProd() {
     return process.env.NODE_ENV === 'production';
-}
-
-function createStackOverflowLink(error: { message: string }): string {
-    const url = `https://stackoverflow.com/search?q=${encodeURIComponent(
-        error.message
-    )}`;
-    return `<a href="${url}" style="color: gray" target="_blank" title="Search for error message on stackoverflow">stackoverflow</a>`;
 }
