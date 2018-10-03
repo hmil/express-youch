@@ -26,6 +26,22 @@ const { errorReporter } = require('express-youch');
 app.use(errorReporter());
 ```
 
+## Configuration options
+
+### links
+
+Add custom links to the error report.
+
+```ts
+app.use(errorReporter({
+    links: [
+        ({message}) =>{
+            const url = `https://stackoverflow.com/search?q=${encodeURIComponent(`[adonis.js] ${message}`)}`;
+            return `<a href="${url}" target="_blank" title="Search on stackoverflow">Search stackoverflow</a>`;
+        }
+    ]
+}));
+```
 
 ## Recepies
 

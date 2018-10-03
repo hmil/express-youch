@@ -17,7 +17,15 @@ app.use((req, res, next) => {
     next(new NotFoundHttpException('Not Found'));
 });
 
-app.use(errorReporter());
+app.use(errorReporter({
+    links: [
+        ({message}) => {
+            const url = `https://stackoverflow.com/search?q=${encodeURIComponent(`[node.js] ${message}`)}`;
+            return `<a href="${url}" target="_blank" title="Search on stackoverflow">Search stackoverflow</a>`;
+        }
+    ]
+}));
+
 app.use((error: NormalizedException, req: express.Request, res: express.Response, next: any) => {
     if (!res.headersSent) {
         res.status(error.statusCode).render('error-page', { error });

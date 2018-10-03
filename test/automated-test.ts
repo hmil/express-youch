@@ -1,3 +1,5 @@
+// tslint:disable:max-line-length
+
 import { expect } from 'chai';
 import { Request, Response } from 'express';
 import * as request from 'supertest';
@@ -81,6 +83,19 @@ describe('Manual error', () => {
 
         expect(eName).to.equal('NotImplementedHttpException');
         expect(eMessage).to.equal('Not Implemented');
+    });
+});
+
+describe('addLink featuer', () => {
+    it('Adds a custom link', async () => {
+        const response = await request(app)
+                .get('/error')
+                .set('Accept', 'text/html')
+                .expect(501)
+                .expect('Content-Type', 'text/html');
+
+        const eLink = findInText(response.text, /<a href="(.+)" target="_blank" title="Search on stackoverflow">Search stackoverflow<\/a>/).trim();
+        expect(eLink).to.equal('https://stackoverflow.com/search?q=%5Bnode.js%5D%20Not%20Implemented');
     });
 });
 
