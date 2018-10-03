@@ -30,6 +30,12 @@ type IReceivedError = Partial<Error> & string & {
 };
 
 type ResponseFormat = 'json' | 'text' | 'html';
+interface ErrorReporterOptions {
+    links: Array<((error: {message: string}) => string)>;
+}
+const defaultErrorReporterOptions: ErrorReporterOptions = {
+    links: []
+};
 
 /**
  * An express-compatible middleware to catch all errors.
@@ -42,13 +48,22 @@ type ResponseFormat = 'json' | 'text' | 'html';
    app.use(errorReporter());
    ```
  */
-export function errorReporter() {
+export function errorReporter(options?: Partial<ErrorReporterOptions>) {
+    const realOptions: ErrorReporterOptions = {
+        ...defaultErrorReporterOptions,
+        ...options
+    };
     return (err: IReceivedError, req: Request, res: Response, next: NextFunction) => {
         if (res.headersSent) {
             return next(err);
         }
         const normalized = createErrorDescriptor(err);
-        sendException(req, res, stripProductionAttributes(normalized)).then(() => next(normalized));
+        sendException(
+            req,
+            res,
+            stripProductionAttributes(normalized),
+            realOptions
+        ).then(() => next(normalized));
     };
 }
 
@@ -79,7 +94,12 @@ function createErrorDescriptor(err: IReceivedError): NormalizedException {
 /**
  * Reports the description of an error back to the user while respecting the 'Accept' header if possible.
  */
-async function sendException(req: Request, res: Response, err: NormalizedException): Promise<void> {
+async function sendException(
+  req: Request,
+  res: Response,
+  err: NormalizedException,
+  options: ErrorReporterOptions
+): Promise<void> {
     switch (getPreferredResponseFormat(req)) {
         case 'json':
             res.status(err.statusCode).json(err);
@@ -89,7 +109,7 @@ async function sendException(req: Request, res: Response, err: NormalizedExcepti
             break;
         case 'html':
             if (!isRunningInProd()) {
-                return sendYouchError(req, res, err);
+        return sendYouchError(req, res, err, options);
             }
             // If the app is running in prod, we let the next middleware down the stack decide how
             // to print the error.
@@ -113,14 +133,24 @@ function getPreferredResponseFormat(req: Request): ResponseFormat {
     return 'text';
 }
 
-function sendYouchError(req: Request, res: Response, err: NormalizedException): Promise<void> {
-    const youch = new Youch(err, req);
-    return youch.toHTML()
-        .then((html: string) => {
-            res.writeHead(err.statusCode, {'content-type': 'text/html'});
-            res.write(html);
-            res.end();
-        });
+function sendYouchError(
+    req: Request,
+    res: Response,
+    err: NormalizedException,
+    options: ErrorReporterOptions
+): Promise<void> {
+    const youch = options
+        .links
+        .reduce(
+            (youchBuilder, link) => youchBuilder.addLink(link),
+            new Youch(err, req)
+        );
+
+    return youch.toHTML().then((html: string) => {
+        res.writeHead(err.statusCode, { 'content-type': 'text/html' });
+        res.write(html);
+        res.end();
+    });
 }
 
 function formatTextResponse(err: NormalizedException): string {
