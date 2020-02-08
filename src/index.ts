@@ -9,7 +9,7 @@ import * as Youch from 'youch';
  */
 export class NormalizedException {
     constructor(
-            public readonly statusCode: number,
+            public readonly status: number,
             public readonly name: string,
             public readonly message: string,
             public readonly stack?: any) {
@@ -30,9 +30,16 @@ type IReceivedError = Partial<Error> & string & {
 };
 
 type ResponseFormat = 'json' | 'text' | 'html';
+
+interface ErrorArg {
+    message: string;
+    name?: string;
+    status?: number;
+};
 interface ErrorReporterOptions {
-    links: Array<((error: {message: string}) => string)>;
+    links: Array<((error: ErrorArg) => string)>;
 }
+
 const defaultErrorReporterOptions: ErrorReporterOptions = {
     links: []
 };
@@ -69,7 +76,7 @@ export function errorReporter(options?: Partial<ErrorReporterOptions>) {
 
 function stripProductionAttributes(exception: NormalizedException) {
     return new NormalizedException(
-        exception.statusCode,
+        exception.status,
         exception.name,
         exception.message,
         isRunningInProd() ? '' : exception.stack
@@ -102,10 +109,10 @@ async function sendException(
 ): Promise<void> {
     switch (getPreferredResponseFormat(req)) {
         case 'json':
-            res.status(err.statusCode).json(err);
+            res.status(err.status).json(err);
             break;
         case 'text':
-            res.status(err.statusCode).contentType('text/plain').send(formatTextResponse(err));
+            res.status(err.status).contentType('text/plain').send(formatTextResponse(err));
             break;
         case 'html':
             if (!isRunningInProd()) {
@@ -147,7 +154,7 @@ function sendYouchError(
         );
 
     return youch.toHTML().then((html: string) => {
-        res.writeHead(err.statusCode, { 'content-type': 'text/html' });
+        res.writeHead(err.status, { 'content-type': 'text/html' });
         res.write(html);
         res.end();
     });
