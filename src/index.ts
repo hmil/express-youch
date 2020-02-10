@@ -35,7 +35,8 @@ interface ErrorArg {
     message: string;
     name?: string;
     status?: number;
-};
+}
+
 interface ErrorReporterOptions {
     links: Array<((error: ErrorArg) => string)>;
 }
@@ -116,7 +117,7 @@ async function sendException(
             break;
         case 'html':
             if (!isRunningInProd()) {
-        return sendYouchError(req, res, err, options);
+                return sendYouchError(req, res, err, options);
             }
             // If the app is running in prod, we let the next middleware down the stack decide how
             // to print the error.
