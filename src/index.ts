@@ -9,10 +9,14 @@ import * as Youch from 'youch';
  */
 export class NormalizedException {
     constructor(
-            public readonly status: number,
+            public readonly statusCode: number,
             public readonly name: string,
             public readonly message: string,
             public readonly stack?: any) {
+    }
+
+    public get status() {
+        return this.statusCode;
     }
 
     public toString() {
