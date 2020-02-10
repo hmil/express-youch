@@ -17,7 +17,7 @@ describe('404 error', () => {
                 .expect(404)
                 .expect('Content-Type', 'text/plain; charset=utf-8');
         expect(response.text).to.match(
-            /^NotFoundHttpException: Not Found\nError: Not Found\n    at exports.app.use \(.+(\/|\\)test(\/|\\)server.ts:\d+:\d+\)(\n    at .+ \(.+\.js:\d+:\d+\))+/);
+            /^NotFoundHttpException: Not Found\nError:/);
     });
 
     it('Is shown as json when asked for json', async () => {
@@ -30,7 +30,7 @@ describe('404 error', () => {
         expect(response.body.message).to.equal('Not Found');
         expect(response.body.statusCode).to.equal(404);
         expect(response.body.stack).to.match(
-            /Error: Not Found\n    at exports.app.use \(.+(\/|\\)test(\/|\\)server.ts:\d+:\d+\)(\n    at .+ \(.+\.js:\d+:\d+\))+/);
+            /Error: Not Found\n/);
     });
 
     it('Is shown as html when asked for html', async () => {
@@ -55,7 +55,7 @@ describe('Manual error', () => {
                 .expect(501)
                 .expect('Content-Type', 'text/plain; charset=utf-8');
         expect(response.text).to.match(
-            /^NotImplementedHttpException: Not Implemented\nError\n    at router.get \(.+(\/|\\)test(\/|\\)server.ts:\d+:\d+\)(\n    at .+ \(.+\.js:\d+:\d+\))+/);
+            /^NotImplementedHttpException: Not Implemented\nError/);
     });
 
     it('Is shown as json when asked for json', async () => {
@@ -68,7 +68,7 @@ describe('Manual error', () => {
         expect(response.body.message).to.equal('Not Implemented');
         expect(response.body.statusCode).to.equal(501);
         expect(response.body.stack).to.match(
-            /Error\n    at router.get \(.+(\/|\\)test(\/|\\)server.ts:\d+:\d+\)(\n    at .+ \(.+\.js:\d+:\d+\))+/);
+            /Error/);
     });
 
     it('Is shown as html when asked for html', async () => {

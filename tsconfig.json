@@ -6,9 +6,11 @@
         "declaration": true,
         "target": "es6",
         "module": "commonjs",
+        "skipLibCheck": true,
         "plugins": [
             { "name": "tslint-language-service" }
-        ]
+        ],
+        "lib": ["ES2015"]
     },
     "include": [
         "src/**/*.ts"
