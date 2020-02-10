@@ -12,6 +12,7 @@
         "no-bitwise": false,
         "interface-name": false,
         "no-conditional-assignment": false,
-        "jsdoc-format": false
+        "jsdoc-format": false,
+        "array-type": false
     }
 }
